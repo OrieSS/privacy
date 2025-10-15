@@ -25,12 +25,13 @@
   <main class="container">
     <header>
       <h1>Privacy Policy</h1>
-      <p class="muted">Effective date: <strong id="pp-date">2025-08-14</strong> · Version 1.0</p>
+      <p class="muted">Effective date: <strong id="pp-date">October 15, 2025</strong> · Version 1.0</p>
     </header>
 
     <section>
       <p>
-        SummarizeAI (the “App”) provides text summarization, OCR, PDF export, and related features.
+        Spirit (the "App") is a habit tracking and personal development application that helps you build
+        better habits, track progress, achieve milestones, and reach your weekly goals.
         We respect your privacy and are committed to transparently explaining what data we collect,
         how we use it, and the choices you have.
       </p>
@@ -40,27 +41,31 @@
       <h2>What We Collect</h2>
       <div class="grid">
         <div class="card small">
-          <h3>User‑Provided Content</h3>
+          <h3>User‑Provided Habit Data</h3>
           <ul class="tight">
-            <li>Text you enter for summarization</li>
-            <li>Images you select or capture for OCR/summarization</li>
-            <li>Audio you record for transcription (if used)</li>
+            <li>Habit names, categories, schedules, and completion history</li>
+            <li>Skills and skill categories you define</li>
+            <li>Milestones and goals you create</li>
+            <li>Volume progress tracking (reading, exercise, etc.)</li>
+            <li>Profile information (name, avatar symbol)</li>
           </ul>
         </div>
         <div class="card small">
-          <h3>Usage & Interaction Data</h3>
+          <h3>Account Information</h3>
           <ul class="tight">
-            <li>Feature usage events (e.g., export, view, search, filters)</li>
-            <li>Summary type selections</li>
-            <li>Timestamps (stored in JST / Asia/Tokyo)</li>
+            <li>Email address (if you sign up with email)</li>
+            <li>OAuth provider data (Google, Apple, Twitter) - name, email</li>
+            <li>Authentication tokens (stored securely in iOS Keychain)</li>
+            <li>Device ID (for multi-device sync conflict resolution)</li>
           </ul>
         </div>
         <div class="card small">
-          <h3>Device & Diagnostics</h3>
+          <h3>Usage & Performance Data</h3>
           <ul class="tight">
-            <li>Pseudonymous user ID (derived from device ID)</li>
-            <li>Device model & OS version</li>
-            <li>Approximate IP (for security & logging)</li>
+            <li>Streak tracking and weekly goal achievements</li>
+            <li>Points, levels, and rank progression</li>
+            <li>App interaction timestamps</li>
+            <li>Sync logs for troubleshooting</li>
           </ul>
         </div>
       </div>
@@ -69,51 +74,149 @@
     <section>
       <h2>Where Your Data Lives</h2>
       <ul class="tight small">
-        <li><strong>On‑device</strong>: OCR via Apple Vision runs on your device. PDFs are generated locally. Saved summaries are stored locally on-device.</li>
-        <li><strong>DeepSeek AI (cloud)</strong>: When you request cloud summarization, the App sends the relevant text and, for image summaries, a resized/compressed image to DeepSeek’s API to generate the result.</li>
-        <li><strong>Supabase (cloud)</strong>: We store usage logs and interaction records in our Supabase project.</li>
+        <li><strong>On‑device</strong>: All habit data, completions, milestones, and progress are stored locally on your device using iOS UserDefaults and secure storage. This data is accessible offline and remains on your device unless you delete the app.</li>
+        <li><strong>Supabase (cloud)</strong>: When you sign in with an account (email, Google, Apple, or Twitter), your data is automatically synced to our Supabase backend for backup and multi-device access. Data is stored in a secure Postgres database with Row Level Security (RLS) ensuring only you can access your data.</li>
+        <li><strong>iOS Keychain</strong>: Authentication tokens (access tokens and refresh tokens) are stored securely in the iOS Keychain, which is encrypted and managed by iOS.</li>
+        <li><strong>Guest Mode</strong>: If you use the app in guest mode (without signing in), all data remains local to your device only and is never sent to cloud servers.</li>
       </ul>
     </section>
 
     <section>
-      <h2>Details about Interaction Records</h2>
+      <h2>Supabase Database Tables</h2>
       <p class="small">
-        For transparency, our <code>user_interactions</code> table may store the following fields:
+        When you create an account and sync your data, the following information is stored in our Supabase database:
       </p>
       <div class="card small">
         <ul class="tight">
-          <li><code>id</code> (UUID), <code>user_id</code> (pseudonymous), <code>device_id</code></li>
-          <li><code>interaction_type</code> (e.g., <code>text_summarization</code>, <code>image_summarization</code>)</li>
-          <li><code>interaction_source</code> (e.g., <code>text</code>, <code>image</code>, <code>saved_summary</code>)</li>
-          <li><code>raw_data</code>: The original text you provided or OCR extracted text (full text)</li>
-          <li><code>processed_data</code>: The generated summary content (full text)</li>
-          <li><code>result_summary</code>: Short form of the result (may be same or omitted)</li>
-          <li><code>metadata</code>: JSON with context (e.g., summary type, image dimensions)</li>
-          <li><code>created_at</code>, <code>updated_at</code>: Timestamps stored in JST</li>
+          <li><code>profiles</code>: Your name, avatar symbol, profile settings, and skill preferences</li>
+          <li><code>habits</code>: Habit details (name, category, frequency, skills, schedule, points configuration)</li>
+          <li><code>habit_completions</code>: Completion history with timestamps, points earned, and duration</li>
+          <li><code>milestones</code>: Your milestones with descriptions, points, completion status, and dates</li>
+          <li><code>volume_progress</code>: Reading volumes, exercise tracking, and segmented progress</li>
+          <li><code>weekly_skill_goals</code>: Your weekly goals per skill with target minutes</li>
+          <li><code>weekly_goal_rewards</code>: Weekly achievement records and reward points</li>
+          <li><code>streak_periods</code>: Streak tracking data for daily, weekly, and monthly habits</li>
+          <li><code>streak_claims</code>: Bonus points claimed from streak achievements</li>
+          <li><code>user_status</code>: Your total points, level, rank, and available points (computed)</li>
         </ul>
       </div>
       <p class="small">
-        Access logs (e.g., app launch, authentication events) may record device model, OS version,
-        pseudonymous user ID, IP address, and location metadata (approximate).
+        Each table includes metadata for sync: <code>device_id</code> (for conflict resolution), 
+        <code>created_at</code>, <code>updated_at</code>, <code>synced_at</code> (timestamps), and 
+        <code>deleted</code> (soft delete flag).
       </p>
     </section>
 
     <section>
       <h2>How We Use Data</h2>
       <ul class="tight small">
-        <li>Provide core features (summarization, OCR, export)</li>
-        <li>Improve reliability and UX (troubleshooting, performance)</li>
-        <li>Security and abuse prevention</li>
-        <li>Analytics about high‑level usage patterns (non‑marketing)</li>
+        <li>Provide core features (habit tracking, progress visualization, streak calculation, weekly goals)</li>
+        <li>Sync your data across devices when you sign in</li>
+        <li>Backup your data to prevent loss</li>
+        <li>Calculate points, levels, ranks, and achievements</li>
+        <li>Resolve conflicts when editing from multiple devices</li>
+        <li>Improve app reliability and fix bugs (through error logs)</li>
+        <li>Ensure data security and prevent unauthorized access</li>
       </ul>
     </section>
 
     <section>
-      <h2>Consent & Controls</h2>
+      <h2>Authentication Providers</h2>
+      <p class="small">Spirit supports multiple sign-in methods:</p>
       <ul class="tight small">
-        <li>You can use <strong>Guest Mode</strong> (no account) or authenticate. A pseudonymous ID is used in both cases.</li>
-        <li>Access logging and interaction logging can be managed via the in‑app consent prompt and Settings.</li>
-        <li>You can delete individual summaries in the App, and you can request deletion of interaction records (see “Your Rights”).</li>
+        <li><strong>Email & Password</strong>: Standard email-based authentication through Supabase</li>
+        <li><strong>Google OAuth</strong>: Sign in with your Google account</li>
+        <li><strong>Apple OAuth</strong>: Sign in with Apple (uses Sign in with Apple)</li>
+        <li><strong>Twitter OAuth</strong>: Sign in with your Twitter/X account</li>
+        <li><strong>Guest Mode</strong>: Use the app without creating an account (local-only, no cloud sync)</li>
+      </ul>
+      <p class="small">
+        When you sign in with OAuth providers, we receive basic profile information (name, email) 
+        from the provider. We do not store your passwords for OAuth sign-ins.
+      </p>
+    </section>
+
+    <section>
+      <h2>Data Synchronization</h2>
+      <p class="small">
+        Spirit uses intelligent device-aware conflict resolution for syncing:
+      </p>
+      <ul class="tight small">
+        <li>Each device has a unique <code>device_id</code> used to track the source of changes</li>
+        <li>When conflicts occur (same data edited on multiple devices), the most recently updated version wins</li>
+        <li>Timestamps use 1-second tolerance to handle precision differences</li>
+        <li>Background sync keeps your data up-to-date automatically</li>
+        <li>High-watermark tracking ensures efficient delta downloads</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Data Retention & Deletion</h2>
+      <ul class="tight small">
+        <li><strong>Local data</strong>: Remains on your device until you delete the app or clear app data</li>
+        <li><strong>Cloud data</strong>: Stored indefinitely while your account is active</li>
+        <li><strong>Account deletion</strong>: When you delete your account, all associated data (habits, completions, milestones, profile) is permanently deleted from our servers within 24 hours</li>
+        <li><strong>Sign out</strong>: Signing out does not delete your cloud data; it remains available when you sign back in</li>
+        <li><strong>Guest mode cleanup</strong>: Local guest data can be deleted manually through the app settings</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Session Management</h2>
+      <p class="small">
+        Spirit uses secure session management powered by Supabase:
+      </p>
+      <ul class="tight small">
+        <li><strong>Access tokens (JWT)</strong>: Short-lived tokens (1 hour) used for API requests</li>
+        <li><strong>Refresh tokens</strong>: Long-lived tokens (indefinite) stored in iOS Keychain for session renewal</li>
+        <li><strong>Automatic refresh</strong>: The app automatically refreshes your session when access tokens expire</li>
+        <li><strong>Session expiry</strong>: If your refresh token becomes invalid, you'll be asked to sign in again</li>
+        <li><strong>Multiple devices</strong>: You can be signed in on multiple devices simultaneously</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Security</h2>
+      <ul class="tight small">
+        <li><strong>Encryption in transit</strong>: All data sent to/from Supabase uses HTTPS/TLS encryption</li>
+        <li><strong>Encryption at rest</strong>: Supabase encrypts all data stored in the database</li>
+        <li><strong>Row Level Security</strong>: Database policies ensure you can only access your own data</li>
+        <li><strong>Keychain storage</strong>: Authentication tokens are stored in iOS Keychain (hardware-backed encryption)</li>
+        <li><strong>OAuth security</strong>: OAuth flows use industry-standard PKCE for enhanced security</li>
+        <li><strong>No password storage</strong>: For OAuth sign-ins, we never see or store your passwords</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Children's Privacy</h2>
+      <p class="small">
+        Spirit is not directed to children under 13. If you believe a child has provided us data, 
+        contact us at <a href="mailto:spirit.orrtea@gmail.com">spirit.orrtea@gmail.com</a> to delete it.
+      </p>
+    </section>
+
+    <section>
+      <h2>Data Sharing</h2>
+      <p class="small">
+        We do not sell, rent, or share your personal data with third parties for marketing purposes. 
+        Your data is only shared with:
+      </p>
+      <ul class="tight small">
+        <li><strong>Supabase</strong>: Our cloud infrastructure provider (for authenticated users only)</li>
+        <li><strong>OAuth providers</strong>: Google, Apple, Twitter (only for authentication purposes)</li>
+        <li><strong>Legal requirements</strong>: If required by law, regulation, or legal process</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Your Rights & Controls</h2>
+      <ul class="tight small">
+        <li><strong>Access</strong>: View all your data within the app at any time</li>
+        <li><strong>Edit</strong>: Modify or delete individual habits, milestones, and other items</li>
+        <li><strong>Export</strong>: Data is stored in standard formats (JSON) accessible through debugging tools</li>
+        <li><strong>Delete</strong>: Delete your account and all associated cloud data through the app's Account settings</li>
+        <li><strong>Guest Mode</strong>: Use the app without creating an account (local-only, no cloud sync)</li>
+        <li><strong>Sign Out</strong>: Sign out to stop syncing without deleting your cloud data</li>
       </ul>
     </section>
 
@@ -121,64 +224,99 @@
       <h2>Third‑Party Services</h2>
       <div class="card small">
         <ul class="tight">
-          <li><strong>Apple Vision</strong>: On‑device OCR. Data stays on your device for OCR.</li>
-          <li><strong>DeepSeek AI</strong>: Cloud summarization service. We send only the text you request to summarize and, for image summaries, the resized/compressed image. Responses are used to generate your summary.</li>
-          <li><strong>Supabase</strong>: Managed backend for logs and interaction data (see above fields).</li>
+          <li><strong>Supabase</strong>: Cloud backend for data storage, authentication, and sync. <a href="https://supabase.com/privacy" target="_blank">Supabase Privacy Policy</a></li>
+          <li><strong>Google OAuth</strong>: Optional sign-in method. <a href="https://policies.google.com/privacy" target="_blank">Google Privacy Policy</a></li>
+          <li><strong>Apple Sign In</strong>: Optional sign-in method. <a href="https://www.apple.com/legal/privacy/" target="_blank">Apple Privacy Policy</a></li>
+          <li><strong>Twitter OAuth</strong>: Optional sign-in method. <a href="https://twitter.com/privacy" target="_blank">Twitter Privacy Policy</a></li>
         </ul>
       </div>
       <p class="small muted">Each provider processes data under its own terms & privacy policies.</p>
     </section>
 
     <section>
-      <h2>Legal Basis (where applicable)</h2>
-      <ul class="tight small">
-        <li><strong>Consent</strong> for sending content to DeepSeek AI for cloud summarization and for storing interaction data.</li>
-        <li><strong>Legitimate interests</strong> for security, fraud prevention, and service reliability.</li>
-      </ul>
-    </section>
-
-    <section>
-      <h2>Retention</h2>
-      <ul class="tight small">
-        <li>On‑device summaries remain until you delete them.</li>
-        <li>Cloud interaction records are retained as needed for functionality and troubleshooting and deleted upon your request, subject to legal obligations.</li>
-      </ul>
-    </section>
-
-    <section>
-      <h2>Security</h2>
-      <p class="small">We use industry‑standard measures to protect data in transit and at rest. No method is 100% secure.</p>
-    </section>
-
-    <section>
-      <h2>Children’s Privacy</h2>
-      <p class="small">The App is not directed to children under 13. If you believe a child has provided us data, contact us to delete it.</p>
-    </section>
-
-    <section>
       <h2>International Transfers</h2>
-      <p class="small">Servers used by our providers may be located in various regions. Timestamps are stored in JST (Asia/Tokyo) for consistency.</p>
+      <p class="small">
+        Your data may be transferred to and stored on servers located in various regions worldwide 
+        as operated by Supabase. All transfers are protected by appropriate safeguards including 
+        encryption and access controls.
+      </p>
     </section>
 
     <section>
-      <h2>Your Rights</h2>
+      <h2>Notifications</h2>
+      <p class="small">
+        Spirit may send local notifications to remind you about scheduled habits. These notifications:
+      </p>
       <ul class="tight small">
-        <li>Access a copy of your interaction data</li>
-        <li>Request correction or deletion</li>
-        <li>Withdraw consent for logging or cloud summarization</li>
+        <li>Are generated locally on your device (no data sent to servers)</li>
+        <li>Can be enabled or disabled in iOS Settings or within the app</li>
+        <li>Do not track whether you opened the notification</li>
+        <li>Are scheduled based on your habit preferences</li>
       </ul>
-      <p class="small">To exercise rights, use in‑app controls or contact us.</p>
-    </section>
-
-    <section>
-      <h2>Contact</h2>
-      <p class="small">Email: <a href="mailto:spirit.orrtea@gmail.com">spirit.orrtea@gmail.com</a> (update this address to your official contact)</p>
     </section>
 
     <section>
       <h2>Changes to this Policy</h2>
-      <p class="small">We may update this policy. Changes will be posted here with a new effective date.</p>
+      <p class="small">
+        We may update this privacy policy from time to time. Changes will be posted on this page 
+        with a new effective date. Continued use of the app after changes constitutes acceptance 
+        of the updated policy.
+      </p>
     </section>
+
+    <section>
+      <h2>Contact Us</h2>
+      <p class="small">
+        If you have questions about this privacy policy or your data, please contact us at:
+      </p>
+      <p class="small">
+        Email: <a href="mailto:spirit.orrtea@gmail.com">spirit.orrtea@gmail.com</a>
+      </p>
+    </section>
+
+    <section>
+      <h2>Legal Basis for Processing (GDPR)</h2>
+      <p class="small">For users in the European Economic Area, our legal bases for processing your data are:</p>
+      <ul class="tight small">
+        <li><strong>Consent</strong>: For creating an account and syncing data to the cloud</li>
+        <li><strong>Contract performance</strong>: To provide the app's core functionality</li>
+        <li><strong>Legitimate interests</strong>: For security, fraud prevention, and service improvement</li>
+      </ul>
+      <p class="small">You can withdraw consent at any time by deleting your account or switching to guest mode.</p>
+    </section>
+
+    <section>
+      <h2>California Privacy Rights (CCPA)</h2>
+      <p class="small">California residents have the right to:</p>
+      <ul class="tight small">
+        <li>Know what personal information is collected, used, shared, or sold</li>
+        <li>Delete personal information (available through account deletion in-app)</li>
+        <li>Opt-out of the sale of personal information (we do not sell your data)</li>
+        <li>Non-discrimination for exercising privacy rights</li>
+      </ul>
+      <p class="small">
+        To exercise these rights, use the in-app account deletion feature or contact us at 
+        <a href="mailto:spirit.orrtea@gmail.com">spirit.orrtea@gmail.com</a>
+      </p>
+    </section>
+
+    <section>
+      <h2>Data We Do NOT Collect</h2>
+      <ul class="tight small">
+        <li>❌ We do not collect location data or GPS coordinates</li>
+        <li>❌ We do not access your contacts, photos, or other apps</li>
+        <li>❌ We do not track you across other apps or websites</li>
+        <li>❌ We do not use advertising networks or sell your data</li>
+        <li>❌ We do not collect sensitive health data (habits are self-defined categories, not medical data)</li>
+      </ul>
+    </section>
+
+    <footer style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
+      <p class="small muted">
+        © 2025 Spirit. All rights reserved.<br>
+        This privacy policy applies to the Spirit iOS application.
+      </p>
+    </footer>
   </main>
 </body>
 </html>
